@@ -5,6 +5,8 @@ from models.Spending import Spending
 from datetime import datetime
 from sqlalchemy import extract
 
+#####################################################################
+
 def get_about_this(VERSION):
     response = (
     f"Simple Expenses Bot (pyTelegramBot) v{VERSION}"
@@ -12,6 +14,8 @@ def get_about_this(VERSION):
     "Desarrollado por Jorge Galvis Cárdenas <jorgegalcad@gmail.com>"
     )
     return response
+
+#####################################################################
 
 def get_help_message ():
     response = (
@@ -30,6 +34,8 @@ def get_help_message ():
     )
     return response
 
+#####################################################################
+
 def get_welcome_message(bot_data):
     response = (
     f"Hola, soy *{bot_data.first_name}* "
@@ -37,6 +43,8 @@ def get_welcome_message(bot_data):
     "¡Estoy aquí para ayudarte a registrar tus gastos!"
     )
     return response
+
+#####################################################################
 
 def register_account(user_id):
     account = db.session.query(Account).get(user_id)
@@ -47,3 +55,38 @@ def register_account(user_id):
         db.session.commit()
         return True
     return False
+
+#####################################################################
+
+def get_balance (user_id):
+    account = db.session.query(Account).get(user_id)
+    db.session.commit()
+    if not account:
+        return None
+    return account.balance
+
+####################################################################
+
+def earn_money (user_id, amount):
+    if amount <= 0:
+        return False
+    control = update_account (user_id, amount)
+    if not control:
+        return False
+    earn = Earning(
+    amount,
+    datetime.now(),
+    user_id)
+    db.session.add(earn)
+    db.session.commit()
+    return True
+
+
+def update_account (user_id, amount):
+    account = db.session.query(Account).get(user_id)
+    db.session.commit()
+    if not account:
+        return False
+    account.balance = account.balance + amount
+    db.session.commit()
+    return True
